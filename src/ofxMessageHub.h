@@ -72,12 +72,14 @@ private:
 	std::vector<std::weak_ptr<Server<Message>>> servers_;
 };
 	
-template<typename Message>
-class Bus : public Server<Message>, public Client<Message>
+template<typename InMessage, typename OutMessage=InMessage, typename Converter=NoConverter<InMessage>>
+class Bus : public Server<OutMessage>, public Client<InMessage>
 {
 protected:
-	void onReceiveMessage(Message &msg) {
-		this->dispatch(msg);
+	void onReceiveMessage(InMessage &msg) {
+		Converter c;
+		OutMessage &&m = c.convert(msg);
+		this->dispatch(m);
 	}
 };
 

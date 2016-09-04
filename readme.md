@@ -42,6 +42,11 @@ client->connect(sub);
 
 ```
 
+Bus also can convert MessageType by giving template argument.  
+ex. `ofx::messagehub::Bus<ofxOscMessage, ofJson, Osc2Json>`  
+You may need to complete your converter(third argument).  
+If developed a cool cenverter, please PR.  
+
 ### Player
 
 ```
@@ -62,9 +67,9 @@ protected:
 
 #### BufferPlayer
 
-If you want to store Messages in Buffer, you should use BufferPlayer.  
-To use it, declare your class extends BufferPlayer and set something to `buffer_`.  
-If the messages are in a file, it's good way to implement `load()` function in your BufferPlayer class.
+If you want to store Messages in Buffer, it's the better way to use `BufferPlayer`.  
+All you need to do is declare your class that extends BufferPlayer and store something to `buffer_`.  
+If the messages are in a file in certain format, it's good way to add `load()` function to your class.
 
 ### Recorder
 

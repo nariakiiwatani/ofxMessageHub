@@ -6,6 +6,22 @@
 
 using namespace ofx::messagehub::osc;
 
+class Osc2AddressString : public Converter<ofxOscMessage, std::string>
+{
+public:
+	std::string convert(const ofxOscMessage &msg) const {
+		return msg.getAddress();
+	}
+};
+
+class StringPrinter : public ofx::messagehub::Client<std::string>
+{
+protected:
+	void onReceiveMessage(std::string &msg) {
+		std::cout << msg << std::endl;
+	}
+};
+
 class ofApp : public ofBaseApp{
 	
 public:
@@ -29,5 +45,6 @@ private:
 	std::shared_ptr<Sender> sender_ = std::make_shared<Sender>();
 	std::shared_ptr<JsonRecorder> recorder_ = std::make_shared<JsonRecorder>();
 	std::shared_ptr<JsonPlayer> player_ = std::make_shared<JsonPlayer>();
-	std::shared_ptr<ofx::messagehub::Bus<ofxOscMessage>> bus_ = std::make_shared<ofx::messagehub::Bus<ofxOscMessage>>();
+	std::shared_ptr<ofx::messagehub::Bus<ofxOscMessage, std::string, Osc2AddressString>> bus_ = std::make_shared<ofx::messagehub::Bus<ofxOscMessage, std::string, Osc2AddressString>>();
+	std::shared_ptr<StringPrinter> printer_ = std::make_shared<StringPrinter>();
 };

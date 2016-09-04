@@ -11,9 +11,10 @@ void ofApp::setup(){
 	bus_->connect(player_);
 
 	sender_->setup("localhost", 12346);
-	sender_->connect(bus_);
+	sender_->connect(receiver_);
 	
 	recorder_->connect(receiver_);
+	printer_->connect(bus_);
 }
 
 //--------------------------------------------------------------
