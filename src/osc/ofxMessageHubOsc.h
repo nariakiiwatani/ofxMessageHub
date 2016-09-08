@@ -33,6 +33,8 @@ protected:
 	}
 };
 	
+using Server = ofx::messagehub::Server<ofxOscMessage>;
+using Client = ofx::messagehub::Client<ofxOscMessage>;
 using Bus = ofx::messagehub::Bus<ofxOscMessage>;
 
 }}}

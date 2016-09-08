@@ -21,13 +21,16 @@ public:
 		ofJson json = ofJson::parse(ofBufferFromFile(filepath));
 		buffer_ = std::accumulate(std::begin(json), std::end(json),
 								  Buffer(),
-								  [](Buffer &buffer, ofJson &json){
-									  Json2Osc converter;
-									  ofxOscMessage msg = converter.convert(json["data"]);
-									  buffer.insert(std::make_pair(json["time"], msg));
+								  [this](Buffer &buffer, ofJson &json){
+									  ofxOscMessage msg;
+									  if(conv_.convert(json["data"], msg)) {
+										  buffer.insert(std::make_pair(json["time"], msg));
+									  }
 									  return buffer;
 								  });
 	}
+protected:
+	Json2Osc conv_;
 };
 
 class JsonRecorder : public BufferRecorder<TimeCounter, ofxOscMessage>
@@ -36,16 +39,20 @@ public:
 	void save(const std::string &filepath) const {
 		ofJson json = std::accumulate(std::begin(buffer_), std::end(buffer_),
 									  ofJson(),
-									  [](ofJson &json, const Buffer::value_type &buffer) {
-										  Osc2Json converter;
-										  ofJson single;
-										  single["time"] = buffer.first;
-										  single["data"] = converter.convert(buffer.second);
-										  json.push_back(single);
+									  [this](ofJson &json, const Buffer::value_type &buffer) {
+										  ofJson data;
+										  if(conv_.convert(buffer.second, data)) {
+											  ofJson single;
+											  single["time"] = buffer.first;
+											  single["data"] = data;
+											  json.push_back(single);
+										  }
 										  return json;
 									  });
 		ofBufferToFile(filepath, json.dump(4), false);
 	}
+protected:
+	Osc2Json conv_;
 };
 
 class JsonStreamRecorder : public StreamRecorder<TimeCounter, ofxOscMessage>
@@ -64,18 +71,24 @@ public:
 		file_.close();
 	}
 	void record(const TimeCounter::CounterType &time, const ofxOscMessage &msg) {
-		Osc2Json encoder;
-		ofJson json;
-		json["time"] = time;
-		json["data"] = encoder.convert(msg);
-		if(!is_first_record_) {
-			file_ << "," << endl;
+		ofJson data;
+		if(conv_.convert(msg, data)) {
+			ofJson json;
+			json["data"] = data;
+			json["time"] = time;
+			if(!is_first_record_) {
+				file_ << "," << endl;
+			}
+			is_first_record_ = false;
+			file_ << json.dump(4);
 		}
-		is_first_record_ = false;
-		file_ << json.dump(4);
 	}
 protected:
 	bool is_first_record_ = false;
+	Osc2Json conv_;
 };
+
+using Recorder = JsonRecorder;
+using Player = JsonPlayer;
 
 }}}
